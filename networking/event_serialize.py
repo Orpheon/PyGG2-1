@@ -120,6 +120,41 @@ class ClientEventChangeclass(object):
         return struct.calcsize(">B")
 
 @serverevent
+class ServerEventChangeteam(object):
+    eventid = constants.EVENT_PLAYER_CHANGETEAM
+
+    def __init__(self, playerid, newteam):
+        self.playerid = playerid
+        self.newteam = newteam
+
+    def pack(self):
+        packetstr = struct.pack(">HB", self.playerid, self.newteam)
+
+        return packetstr
+
+    def unpack(self, packetstr):
+        self.playerid, self.newteam = struct.unpack_from(">HB", packetstr)
+
+        return struct.calcsize(">HB")
+
+@clientevent
+class ClientEventChangeteam(object):
+    eventid = constants.EVENT_PLAYER_CHANGETEAM
+
+    def __init__(self, newteam):
+        self.newteam = newteam
+
+    def pack(self):
+        packetstr = struct.pack(">B", self.newteam)
+
+        return packetstr
+
+    def unpack(self, packetstr):
+        self.newteam = struct.unpack_from(">B", packetstr)[0]
+
+        return struct.calcsize(">B")
+
+@serverevent
 class ServerEventSpawn(object):
     eventid = constants.EVENT_PLAYER_SPAWN
 

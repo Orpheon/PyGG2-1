@@ -75,7 +75,9 @@ class Networker(object):
                 current_class = function.convert_class(player_obj.nextclass)
                 character_exists = False
 
-            packetstr += struct.pack(">32pBB", player_obj.name, current_class, character_exists)
+            current_team = player_obj.team
+
+            packetstr += struct.pack(">32pBBB", player_obj.name, current_class, current_team, character_exists)
 
         event = networking.event_serialize.ServerEventFullUpdate(packetstr)
         return event

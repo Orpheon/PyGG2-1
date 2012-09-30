@@ -14,6 +14,8 @@ from networking import event_serialize
 def Server_Event_Hello(client, networker, game, event):
     # Stop saying hello
     networker.has_connected = True
+    # Update the sequence, since from now the server is listening, or the first packet won't get through
+    networker.sequence += 1
     # TODO: Some version check using event.version and constants.GAME_VERSION_NUMBER
     # Set all the important values to the game
     game.servername = event.servername
@@ -29,6 +31,10 @@ def Server_Event_Player_Join(client, networker, game, event):
 def Server_Event_Changeclass(client, networker, game, event):
     player = game.current_state.players[event.playerid]
     player.nextclass = function.convert_class(event.newclass)
+
+def Server_Event_Changeteam(client, networker, game, event):
+    player = game.current_state.players[event.playerid]
+    player.team = event.newteam
 
 def Server_Event_Die(client, networker, game, event):
     player = game.current_state.players[event.playerid]
@@ -70,7 +76,7 @@ def Server_Full_Update(client, networker, game, event):
     for index in range(numof_players):
         player = engine.player.Player(game, game.current_state, index)
 
-        player.name, player_class, character_exists = struct.unpack_from(">32pBB", event.bytestr)
+        player.name, player_class, player.team, character_exists = struct.unpack_from(">32pBBB", event.bytestr)
         player.nextclass = function.convert_class(player_class)
         event.bytestr = event.bytestr[34:]
 
@@ -109,6 +115,7 @@ eventhandlers = {}
 eventhandlers[constants.EVENT_HELLO] = Server_Event_Hello
 eventhandlers[constants.EVENT_PLAYER_JOIN] = Server_Event_Player_Join
 eventhandlers[constants.EVENT_PLAYER_CHANGECLASS] = Server_Event_Changeclass
+eventhandlers[constants.EVENT_PLAYER_CHANGETEAM] = Server_Event_Changeteam
 eventhandlers[constants.EVENT_PLAYER_DIE] = Server_Event_Die
 eventhandlers[constants.EVENT_PLAYER_SPAWN] = Server_Event_Spawn
 eventhandlers[constants.SNAPSHOT_UPDATE] = Server_Snapshot_Update

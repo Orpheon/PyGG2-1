@@ -7,7 +7,10 @@ import function
 import engine.game, engine.player
 import constants
 import networking
+
 import time
+import random
+
 def get_input(window):
     return {
         "up": sfml.Keyboard.is_key_pressed(sfml.Keyboard.W),
@@ -72,6 +75,11 @@ class GameClientHandler(Handler):
         self.inputsender_accumulator = 0.0 # this counter will accumulate time to send input at a constant rate
         self.fpscounter_accumulator = 0.0 # this counter will tell us when to update the fps info in the title
         self.fpscounter_frames = 0 # this counter will count the number of frames there are before updating the fps info
+        
+        # Tell the server we want a certain class and team
+        teamchange = networking.event_serialize.ClientEventChangeteam(random.choice((constants.TEAM_BLUE, constants.TEAM_RED)))
+        classchange = networking.event_serialize.ClientEventChangeclass(constants.CLASS_SCOUT)
+        self.game.sendbuffer += [teamchange, classchange]
 
     def step(self):
         #game loop

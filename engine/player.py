@@ -5,9 +5,6 @@ import character
 import struct
 from networking import event_serialize
 
-# FIXME: Remove once a sane team selection exists
-import random
-
 class Player(object):
     def __init__(self, game, state, id):
         self.id = id
@@ -24,9 +21,8 @@ class Player(object):
         self.middlemouse = False
         self.rightmouse = False
         self.aimdirection = 0
-
         self.nextclass = character.Scout
-        self.team = random.choice((constants.TEAM_RED, constants.TEAM_BLUE))
+        self.team = constants.TEAM_SPECTATOR
         self.character_id = None
         self.respawntimer = 0
         self.name = "Test name"
@@ -36,7 +32,7 @@ class Player(object):
     def step(self, game, state, frametime):
         # Only do this on the server
         if game.isserver:
-            if self.character_id == None:# If the character is dead
+            if self.character_id == None and self.team != constants.TEAM_SPECTATOR:# If the character is dead
                 if self.respawntimer <= 0:
                     # Respawn
                     self.spawn(game, state)
