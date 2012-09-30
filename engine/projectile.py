@@ -158,7 +158,7 @@ class Rocket(entity.MovingObject):
     fade_time = .3 # seconds of fading when max_flight_time is being reached
     max_flight_time = 20
 
-    damage = 35
+    damage = 65
     blastradius = 65
     knockback = 240
 
@@ -216,6 +216,7 @@ class Rocket(entity.MovingObject):
                     force = (1 - (length/self.blastradius)) * self.knockback
                     obj.hspeed += force*(x/length)
                     obj.vspeed += force*(y/length)
+                    obj.hp -= self.damage*(length/self.blastradius)
 
         super(Rocket, self).destroy(state)
 
@@ -243,6 +244,15 @@ class Rocket(entity.MovingObject):
 
         if game.map.collision_mask.overlap(mask, (int(self.x), int(self.y))) or self.flight_time > self.max_flight_time:
             self.destroy(game, state, frametime)
+
+        for player in state.players.values():
+            if player.team not in (self.team, constants.TEAM_SPECTATOR):
+                try:
+                    character = state.entities[player.character_id]
+                    if character.collision_mask.overlap(mask, (int(self.x - character.x), int(self.y - character.y))):
+                        self.destroy(game, state, frametime)
+                except KeyError:
+                    pass
 
     def interpolate(self, prev_obj, next_obj, alpha):
         super(Rocket, self).interpolate(prev_obj, next_obj, alpha)

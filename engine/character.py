@@ -219,7 +219,6 @@ class Character(entity.MovingObject):
         byte = struct.unpack_from(">B", packetstr)[0]
         packetstr = packetstr[1:]
         self.intel = byte & (1 << 0)
-        
         self.can_doublejump = byte & (1 << 1)
         #self.sentry = byte & (1 << 2)
 
