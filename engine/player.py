@@ -5,6 +5,9 @@ import character
 import struct
 from networking import event_serialize
 
+# FIXME: Remove once a sane team selection exists
+import random
+
 class Player(object):
     def __init__(self, game, state, id):
         self.id = id
@@ -23,7 +26,7 @@ class Player(object):
         self.aimdirection = 0
 
         self.nextclass = character.Scout
-        self.team = constants.TEAM_RED
+        self.team = random.choice((constants.TEAM_RED, constants.TEAM_BLUE))
         self.character_id = None
         self.respawntimer = 0
         self.name = "Test name"
