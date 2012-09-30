@@ -157,8 +157,8 @@ class Character(entity.MovingObject):
 
             self.vspeed = 0
 
-        player.last_left = player.left;
-        player.last_right = player.right;
+        player.last_left = player.left
+        player.last_right = player.right
 
     def onground(self, game, state):
         # are we on the ground? About one third of an unit from the ground is enough to qualify for this
