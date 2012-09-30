@@ -78,7 +78,7 @@ def Server_Full_Update(client, networker, game, event):
 
         player.name, player_class, player.team, character_exists = struct.unpack_from(">32pBBB", event.bytestr)
         player.nextclass = function.convert_class(player_class)
-        event.bytestr = event.bytestr[34:]
+        event.bytestr = event.bytestr[35:]
 
         if character_exists:
             player.spawn(game, game.current_state)
@@ -95,7 +95,7 @@ def Server_Event_Fire_Primary(client, networker, game, event):
         character = game.current_state.entities[player.character_id]
         weapon = game.current_state.entities[character.weapon]
         weapon.fire_primary(game, game.current_state)
-    except IndexError:
+    except KeyError:
         # character is dead or something. Shouldn't happen, so print something
         print("Error: Firing event called for dead or non-existent character!")
 
@@ -106,7 +106,7 @@ def Server_Event_Fire_Secondary(client, networker, game, event):
         character = game.current_state.entities[player.character_id]
         weapon = game.current_state.entities[character.weapon]
         weapon.fire_secondary(game, game.current_state)
-    except IndexError:
+    except KeyError:
         # character is dead or something. Shouldn't happen, so print something
         print("Error: Firing event called for dead or non-existent character!")
 

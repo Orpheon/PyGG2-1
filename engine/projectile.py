@@ -9,6 +9,7 @@ import entity
 import character
 import function
 import mask
+import constants
 
 class Shot(entity.MovingObject):
     shot_hitmasks = {}
@@ -68,6 +69,16 @@ class Shot(entity.MovingObject):
                 y -= v_unit_speed
 
             self.destroy(state)
+            
+        for player in state.players.values():
+            if player.team not in (self.team, constants.TEAM_SPECTATOR):
+                try:
+                    character = state.entities[player.character_id]
+                    if character.collision_mask.overlap(mask, (int(self.x - character.x), int(self.y - character.y))):
+                        character.hp -= self.damage
+                        self.destroy(state)
+                except KeyError:
+                    pass
 
     def interpolate(self, prev_obj, next_obj, alpha):
         super(Shot, self).interpolate(prev_obj, next_obj, alpha)

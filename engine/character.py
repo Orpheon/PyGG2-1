@@ -9,6 +9,7 @@ import function
 import entity
 import weapon
 import mask
+import networking
 
 class Character(entity.MovingObject):
     # base acceleration amount in pixels per second
@@ -31,11 +32,11 @@ class Character(entity.MovingObject):
         self.just_spawned = False
         # time tracker for the moving of the character's legs
         self.animoffset = 0.0
-        self.hp_offset = -1 # FIXME: REMOVE; THIS ONLY EXISTS FOR HEALTH HUD TESTING
 
         self.can_doublejump = False
         self.desired_direction = 0
         self.sentry = None
+
         self.team = state.players[self.player_id].team
 
         self.issynced = True
@@ -111,13 +112,12 @@ class Character(entity.MovingObject):
         # hspeed limit
         # self.hspeed = min(self.max_speed, max(-self.max_speed, self.hspeed))
 
-        self.hp+=self.hp_offset # test health change
-        if self.hp < 0:
-            self.hp_offset = 1
-        if self.hp > self.maxhp:
-            self.hp_offset = -1
-
     def endstep(self, game, state, frametime):
+
+        if self.hp <= 0 and game.isserver:
+            death_event = networking.event_serialize.ServerEventDie(self.player_id)
+            game.sendbuffer.append(death_event)
+            self.die(game, state)
 
         player = self.get_player(game, state)
         # check if we are on the ground before moving (for walking over 1 unit walls)
@@ -198,7 +198,7 @@ class Character(entity.MovingObject):
 
     def serialize(self, state):
         packetstr = ""
-        packetstr += struct.pack(">IIii", round(self.x), round(self.y), round(self.hspeed*10), round(self.vspeed*10))
+        packetstr += struct.pack(">IIiiB", round(self.x), round(self.y), round(self.hspeed*10), round(self.vspeed*10), max(round(self.hp), 0))
 
         # Serialize intel, doublejump, etc... in one byte. Should we merge this with the input serialization in Player? Move the input ser. here?
         byte = 0
@@ -212,18 +212,19 @@ class Character(entity.MovingObject):
         return packetstr
 
     def deserialize(self, state, packetstr):
-        self.x, self.y, self.hspeed, self.vspeed = struct.unpack_from(">IIii", packetstr)
+        self.x, self.y, self.hspeed, self.vspeed, self.hp = struct.unpack_from(">IIiiB", packetstr)
         self.hspeed /= 10;
         self.vspeed /= 10;
         packetstr = packetstr[16:]
         byte = struct.unpack_from(">B", packetstr)[0]
         packetstr = packetstr[1:]
         self.intel = byte & (1 << 0)
+        
         self.can_doublejump = byte & (1 << 1)
         #self.sentry = byte & (1 << 2)
 
         weapon_string_length = state.entities[self.weapon].deserialize(state, packetstr)
-        return struct.calcsize(">IIiiB")+weapon_string_length
+        return struct.calcsize(">IIiiBB")+weapon_string_length
 
 class Scout(Character):
     # width, height of scout - rectangle collision
